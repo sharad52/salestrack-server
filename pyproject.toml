@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "salestrack"
+version = "0.1.0"
+description = ""
+authors = ["ersharad <sharad@krispcallmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = {extras = ["standard"], version = "^0.112.2"}
+uvicorn = {extras = ["standard"], version = "^0.30.6"}
+sqlalchemy = "^2.0.32"
+fire = "^0.6.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
