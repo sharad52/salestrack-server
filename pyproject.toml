@@ -16,3 +16,6 @@ fire = "^0.6.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+cli = "cli:main"

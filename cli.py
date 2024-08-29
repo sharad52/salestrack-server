@@ -3,22 +3,13 @@
 from __future__ import annotations
 
 import fire
-from salestrack import console
+from salestrack.console import CliCommand as SalesTrackCommand
 
 
-if __name__ == "__main__":
-    fire.Fire(console.CliCommand)
-
-# from fastapi import FastAPI
-
-# app = FastAPI()
+class Command:
+    def __init__(self) -> None:
+        self.salestrack = SalesTrackCommand
 
 
-# @app.get("/")
-# async def root():
-#     return {"message": "Hello World"}
-
-
-# @app.get("/hello/{name}")
-# async def say_hello(name: str):
-#     return {"message": f"Hello {name}"}
+def main():
+    fire.Fire(Command)
