@@ -4,6 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["ersharad <sharad@krispcallmail.com>"]
 readme = "README.md"
+packages = [{include = "salestrack"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
