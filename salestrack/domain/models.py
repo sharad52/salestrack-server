@@ -35,5 +35,6 @@ class Sales(Base):
     id = sa.Column(sa.Integer, primary_key=True, index=True)
     product_id = sa.Column(sa.Integer, sa.ForeignKey("product.id"))
     quantity = sa.Column(sa.Integer)
+    month = sa.Column(sa.Date)
 
     product = sa.orm.relationship("product")

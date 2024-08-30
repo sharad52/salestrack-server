@@ -27,3 +27,4 @@ class AddProduct(BaseModel):
 class AddSales(BaseModel):
     product_id: int
     quantity: int
+    month: str
