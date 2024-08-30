@@ -1,7 +1,8 @@
 from fastapi import FastAPI
+from salestrack.entrypoints.routes import user_routes
 
 app = FastAPI()
-
+app.include_router(user_routes)
 
 
 
