@@ -21,10 +21,12 @@ class AddFamily(BaseModel):
 
 class AddProduct(BaseModel):
     name: str
-    family_name: str
+    family_id: int
+    price: float
 
 
 class AddSales(BaseModel):
     product_id: int
     quantity: int
-    month: str
+    sales_date: str
+    sales_amount: int

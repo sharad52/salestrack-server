@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from salestrack.entrypoints.routes import user_routes, product_routes
+from salestrack.domain.models import Base
 from salestrack.core.config import settings
+from salestrack.dbconfig.db_config import database, metadata, engine
+from salestrack.entrypoints.routes import user_routes, product_routes
+
 
 
 def startup():
@@ -27,11 +30,20 @@ def get_application():
 
 app = get_application()
 
-# app = FastAPI(
-#     debug=False,
-#     on_startup=[startup],
-#     on_shutdown=[on_shutdown]
-# )
+#SQLAlchemy define table to db
+Base.metadata.create_all(bind=engine)
+
+#Dependency to obtain db session
+def get_db():
+    db = database.connect()
+    try: 
+        yield db
+    finally: 
+        db.disconnect()
+
+
+
+
 
 app.include_router(user_routes, prefix="/users", tags=["users"])
 app.include_router(product_routes, prefix="/products", tags=["products"])

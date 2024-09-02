@@ -1,7 +1,9 @@
 import sqlalchemy as sa
-# from sqlalchemy.orm import relationship
-from salestrack.databases.config import Base
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.hybrid import hybrid_property
 
+
+Base = declarative_base()
 
 class User(Base):
     __tablename__ = 'users'
@@ -24,7 +26,8 @@ class Product(Base):
 
     id = sa.Column(sa.Integer, primary_key=True, index=True)
     name = sa.Column(sa.String, index=True)
-    family_name = sa.Column(sa.String, sa.ForeignKey("family.name"))
+    family_id = sa.Column(sa.Integer, sa.ForeignKey("family.id"))
+    price = sa.Column(sa.Float)
 
     family = sa.orm.relationship("Family")
 
@@ -35,6 +38,13 @@ class Sales(Base):
     id = sa.Column(sa.Integer, primary_key=True, index=True)
     product_id = sa.Column(sa.Integer, sa.ForeignKey("product.id"))
     quantity = sa.Column(sa.Integer)
-    month = sa.Column(sa.Date)
+    sales_date = sa.Column(sa.Date)
+    sales_amount = sa.Column(sa.Integer)
 
     product = sa.orm.relationship("product")
+
+    @hybrid_property
+    def year_month(self):
+        return self.sales_date.strftime("%Y-%m")
+
+
