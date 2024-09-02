@@ -1,5 +1,9 @@
 from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
+
 from salestrack.entrypoints.routes import user_routes, product_routes
+from salestrack.core.config import settings
+
 
 def startup():
     print('Ready to go')
@@ -7,11 +11,27 @@ def startup():
 def on_shutdown():
     return "An application has shutdown successfylly."
 
-app = FastAPI(
-    debug=False,
-    on_startup=[startup],
-    on_shutdown=[on_shutdown]
-)
+
+def get_application():
+    _app = FastAPI(title=settings.PROJECT_NAME)
+
+    _app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"]
+    )
+
+    return _app
+
+app = get_application()
+
+# app = FastAPI(
+#     debug=False,
+#     on_startup=[startup],
+#     on_shutdown=[on_shutdown]
+# )
 
 app.include_router(user_routes, prefix="/users", tags=["users"])
 app.include_router(product_routes, prefix="/products", tags=["products"])
