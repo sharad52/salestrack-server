@@ -1,8 +1,9 @@
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 from fastapi import APIRouter
 from fastapi import HTTPException, Depends
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from salestrack.schemas import schema
@@ -59,7 +60,7 @@ async def load_data(csv_file: str, db: Session = Depends(get_db)):
                     db.commit()
 
 
-@router.get("/products/{product_id}")
+@router.get("/product/{product_id}")
 async def get_product(product_id: int, db: Session = Depends(get_db)):
     product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not product:
@@ -75,7 +76,7 @@ async def get_product(product_id: int, db: Session = Depends(get_db)):
 
 @router.get("/products/")
 async def list_products(db: Session = Depends(get_db)):
-    products = db.query(models.Product).all()
+    products = await db.query(models.Product).all()
     return [{
         "id": product.id, 
         "name": product.name, 
@@ -83,3 +84,28 @@ async def list_products(db: Session = Depends(get_db)):
         "price": product.price
         } for product in products
     ]
+
+@router.put("/product/{product_id}")
+async def update_product(update_data: schema.AddProduct, product_id: int, db: Session = Depends(get_db)):
+    updated_product = db.query(models.Product).filter(models.Product.id == product_id)
+    if updated_product.first() is None:
+        raise HTTPException(status_code=404, detail=f"No product found for id: {product_id}")
+    updated_product.update(update_data.model_dump(), synchronize_session=False)
+    db.commit()
+    return updated_product.first()
+
+@router.get("/product/{product_id}/last_year_sales")
+async def get_sales_last_year(product_id: int, db: Session = Depends(get_db)):
+    today = datetime.today()
+    last_year = today - timedelta(days=365)
+    
+    sales_sum = (
+        db.query(func.sum(models.Sales.sales_amount))
+        .filter(models.Sales.product_id == product_id)
+        .filter(models.Sales.sales_date >= last_year)
+        .scalar()
+    )
+
+    if sales_sum is None:
+        raise HTTPException(status_code=404, detail="No Sales data found")
+    return {"product_id": product_id, "total_last_year_sales": sales_sum}
