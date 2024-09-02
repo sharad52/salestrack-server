@@ -29,7 +29,7 @@ class Product(Base):
     family_id = sa.Column(sa.Integer, sa.ForeignKey("family.id"))
     price = sa.Column(sa.Float)
 
-    family = sa.orm.relationship("Family")
+    family = sa.orm.relationship('Family')
 
 
 class Sales(Base):
@@ -41,7 +41,7 @@ class Sales(Base):
     sales_date = sa.Column(sa.Date)
     sales_amount = sa.Column(sa.Integer)
 
-    product = sa.orm.relationship("product")
+    product = sa.orm.relationship('Product')
 
     @hybrid_property
     def year_month(self):
