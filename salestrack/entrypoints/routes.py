@@ -1,8 +1,14 @@
 from fastapi import APIRouter
+from salestrack.service_layer.services import load_user
 
 user_routes = APIRouter(
     prefix='/users',
     tags=['Users']
+)
+
+product_routes = APIRouter(
+    prefix="/products",
+    tags=["products"]
 )
 
 @user_routes.get('/')

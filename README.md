@@ -9,3 +9,9 @@ to run a project
 
 psycopg2 - to connect sqlalchemy and postgresql
 
+uvicorn
+
+python --version: 3.12.3
+
+alembic -- database migration tool to simplify the porcess of managing database changes.
+
