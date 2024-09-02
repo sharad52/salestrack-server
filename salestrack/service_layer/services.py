@@ -26,7 +26,7 @@ async def load_data(csv_file: str, db: Session = Depends(get_db)):
     with open(csv_file, newline='') as file:
         reader = csv.DictReader(file)
         for row in reader:
-            # block to handle family
+            # code block to handle family
             family = db.query(models.Family).filter(models.Family.name == row['Family']).first()
             if not family:
                 family = models.Family(name=row['Family'])
@@ -58,3 +58,28 @@ async def load_data(csv_file: str, db: Session = Depends(get_db)):
                     db.add(sale)
                     db.commit()
 
+
+@router.get("/products/{product_id}")
+async def get_product(product_id: int, db: Session = Depends(get_db)):
+    product = db.query(models.Product).filter(models.Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail=f"No product found for id: {product_id}")
+    sales = db.query(models.Sales).filter(models.Sales.product_id == product_id).all()
+    return {
+        "product": product.name,
+        "family": product.family.name,
+        "price": product.price,
+        "sales": [{"month": sale.month, "amount": sale.sales_amount} for sale in sales]
+    }
+
+
+@router.get("/products/")
+async def list_products(db: Session = Depends(get_db)):
+    products = db.query(models.Product).all()
+    return [{
+        "id": product.id, 
+        "name": product.name, 
+        "family": product.family.name, 
+        "price": product.price
+        } for product in products
+    ]
