@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from fastapi import HTTPException, Depends
 from sqlalchemy import func
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError, DatabaseError
 
 from salestrack.schemas import schema
 from salestrack.domain import models
@@ -21,6 +22,33 @@ async def list_family(
     family = db.query(models.Family).all()
     return family
 
+
+@router.post("/family")
+async def create_family(post_family: schema.AddFamily, db: Session = Depends(get_db)):
+    try:
+        new_family = models.Family(**post_family.model_dump())
+        db.add(new_family)
+        db.commit()
+        db.refresh(new_family)
+        return [new_family]
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=400, detail="Couldn't Create Family"
+        )
+    except DatabaseError:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="Error occured in DB"
+        )
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unexpected error: {e}"
+        )
+    
 
 @router.post("/load_data/")
 async def load_data(csv_file: str, db: Session = Depends(get_db)):

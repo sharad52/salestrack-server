@@ -27,6 +27,5 @@ class AddProduct(BaseModel):
 
 class AddSales(BaseModel):
     product_id: int
-    quantity: int
     sales_date: str
     sales_amount: int
