@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from enum import Enum
+from pydantic import BaseModel, Field
 
 
 class UserBase(BaseModel):
@@ -29,3 +30,25 @@ class AddSales(BaseModel):
     product_id: int
     sales_date: str
     sales_amount: int
+
+
+class FamilyBaseSchema(BaseModel):
+    id: int | None = None
+    name: str = Field(
+        ..., description="The name of the family", examples="Candy"
+    )
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+        arbitrary_types_allowed = True
+
+
+class Status(Enum):
+    Success = "Success"
+    Failed = "Failed"
+
+
+class FamilyResponse(BaseModel):
+    Status: Status
+    Family: FamilyBaseSchema

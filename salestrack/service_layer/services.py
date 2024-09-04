@@ -2,7 +2,7 @@ import csv
 from datetime import datetime, timedelta
 from typing import List
 from fastapi import APIRouter
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException, Depends, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, DatabaseError
@@ -49,6 +49,36 @@ async def create_family(post_family: schema.AddFamily, db: Session = Depends(get
             detail=f"Unexpected error: {e}"
         )
     
+
+@router.patch("/family/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=schema.FamilyResponse)
+async def update_family(id: int, payload: schema.FamilyBaseSchema, db: Session = Depends(get_db)):
+    family = db.query(models.Family).filter(models.Family.id == id).first()
+    if not family: 
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f" No Family found with the given id: {id}"
+        )
+    try:
+        update_data = payload.model_dump(exclude_unset=True)
+        family.update(update_data, synchronize_session=False)
+        db.commit()
+        db.refresh(family)
+        family_schema = schema.FamilyBaseSchema.model_validate(family)
+        return schema.FamilyResponse(status=schema.Status.Success, Family=family_schema)
+    except IntegrityError as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A Family with given details already exists.",
+        ) from e
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occured while updating the Family."
+        ) from e
+    
+
 
 @router.post("/load_data/")
 async def load_data(csv_file: str, db: Session = Depends(get_db)):
