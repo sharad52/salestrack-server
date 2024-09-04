@@ -1,4 +1,5 @@
 import pytest
+import random
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -47,3 +48,10 @@ def test_client(db_session):
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as test_client: 
         yield test_client
+
+
+@pytest.fixture()
+def model_id() -> int:
+    """Generate Random integer"""
+    return random.randint(1, 10000)
+
