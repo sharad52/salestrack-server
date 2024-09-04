@@ -51,7 +51,15 @@ def test_client(db_session):
 
 
 @pytest.fixture()
-def model_id() -> int:
+def item_id() -> int:
     """Generate Random integer"""
     return random.randint(1, 10000)
+
+
+@pytest.fixture()
+def family_payload():
+    """Sample payload for family"""
+    return {
+        "name": "Book"
+    }
 
