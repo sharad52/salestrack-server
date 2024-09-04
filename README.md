@@ -13,5 +13,6 @@ uvicorn
 
 python --version: 3.12.3
 
-alembic -- database migration tool to simplify the porcess of managing database changes.
+<!-- alembic -- database migration tool to simplify the porcess of managing database changes. -->
+pytest => for test cases
 

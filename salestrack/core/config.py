@@ -37,5 +37,7 @@ class Settings(BaseSettings):
             host=values.data.get("POSTGRES_SERVER"),
             path=f"/{values.data.get('POSTGRES_DB') or ''}",
         )
+    
+    TEST_DB_URI: Union[Optional[PostgresDsn], str] = None
 
 settings = Settings()
