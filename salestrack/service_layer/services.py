@@ -1,7 +1,9 @@
+import io
 import csv
+import pandas as pd
 from datetime import datetime, timedelta
 from typing import List
-from fastapi import APIRouter
+from fastapi import APIRouter, File, UploadFile, Form
 from fastapi import HTTPException, Depends, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -14,23 +16,17 @@ from salestrack.dbconfig.db_config import get_db
 
 router = APIRouter(prefix="/sales", tags=["Sales"])
 
-@router.get("/family", response_model=List[schema.AddFamily])
-async def list_family(
-    db: Session = Depends(get_db)
-):
-    
-    family = db.query(models.Family).all()
-    return family
 
-
-@router.post("/family")
-async def create_family(post_family: schema.AddFamily, db: Session = Depends(get_db)):
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schema.SalesResponse)
+async def create_product(payload: schema.SalesBaseSchema, db: Session = Depends(get_db)):
     try:
-        new_family = models.Family(**post_family.model_dump())
-        db.add(new_family)
-        db.commit()
-        db.refresh(new_family)
-        return [new_family]
+        sales = db.query(models.Sales).filter(models.Product.name == payload.name).first()
+        if not product:
+            product = models.Product(**payload.model_dump())
+            db.add(product)
+            db.commit()
+            db.refresh(product)
+
     except IntegrityError:
         db.rollback()
         raise HTTPException(
@@ -48,6 +44,45 @@ async def create_family(post_family: schema.AddFamily, db: Session = Depends(get
             status_code=500,
             detail=f"Unexpected error: {e}"
         )
+    product_schema = schema.ProductBaseSchema.model_validate(product)
+    return schema.ProductResponse(Status=schema.Status.Success, Product=product_schema)
+
+
+@router.get("/family", response_model=List[schema.AddFamily])
+async def list_family(
+    db: Session = Depends(get_db)
+):
+    
+    family = db.query(models.Family).all()
+    return family
+
+
+@router.post("/family", status_code=status.HTTP_201_CREATED, response_model=schema.FamilyResponse)
+async def create_family(post_family: schema.AddFamily, db: Session = Depends(get_db)):
+    try:
+        new_family = models.Family(**post_family.model_dump())
+        db.add(new_family)
+        db.commit()
+        db.refresh(new_family)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=400, detail="Couldn't Create Family"
+        )
+    except DatabaseError:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="Error occured in DB"
+        )
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unexpected error: {e}"
+        )
+    family_schema = schema.FamilyBaseSchema.model_validate(new_family)
+    return schema.FamilyResponse(Status=schema.Status.Success, Family=family_schema)
     
 
 @router.patch("/family/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=schema.FamilyResponse)
@@ -79,43 +114,114 @@ async def update_family(id: int, payload: schema.FamilyBaseSchema, db: Session =
         ) from e
     
 
+@router.post("/product", status_code=status.HTTP_201_CREATED, response_model=schema.ProductResponse)
+async def create_product(payload: schema.ProductBaseSchema, db: Session = Depends(get_db)):
+    try:
+        product = db.query(models.Product).filter(models.Product.name == payload.name).first()
+        if not product:
+            product = models.Product(**payload.model_dump())
+            db.add(product)
+            db.commit()
+            db.refresh(product)
 
-@router.post("/load_data/")
-async def load_data(csv_file: str, db: Session = Depends(get_db)):
-    with open(csv_file, newline='') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            # code block to handle family
-            family = db.query(models.Family).filter(models.Family.name == row['Family']).first()
-            if not family:
-                family = models.Family(name=row['Family'])
-                db.add(family)
-                db.commit()
-                db.refresh(family)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=400, detail="Couldn't Create Family"
+        )
+    except DatabaseError:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="Error occured in DB"
+        )
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unexpected error: {e}"
+        )
+    product_schema = schema.ProductBaseSchema.model_validate(product)
+    return schema.ProductResponse(Status=schema.Status.Success, Product=product_schema)
+    
+
+@router.post("/load-data")
+async def load_data(type: str = Form(...), file: UploadFile = File(...), db: Session = Depends(get_db)):
+    contents = file.file.read()
+    data = io.BytesIO(contents)
+    df = pd.read_excel(data, engine='openpyxl')
+    for row in df.iloc:
+        # process excel data for db
+        family_name = row.get("Family")
+        # if family_name:
+        family = db.query(models.Family).filter(models.Family.name == family_name).first()
+        if not family:
+            new_family_data = {"name": family_name}
+            family = await create_family(schema.AddFamily(**new_family_data), db)
+        # product 
+        product_name = row.get("Product Name")
+        product_id = int(row.get("Product ID"))
+        price = float(row.get("Price"))
+
+        # if product_id:
+        product = db.query(models.Product).filter(models.Product.id == product_id).first()
+        if not product:
+            new_product_data = {"id": product_id, "name": product_name, "family_id": family.id, "price": price}
+            product = await create_product(schema.AddProduct(**new_product_data), db)
+
+        # Sales
+
+        
+
+    data.close()
+    file.file.close()
+    return "Success!!!"
+
+    # import pdb
+    # pdb.set_trace()
+    # s = str(contents, 'utf-8')
+    # data = io.StringIO(s)
+    # df = pd.read_csv(data)
+    # data.close()
+    # file.file.close()
+    print("===testing data===", df)
+
+    
+
+    # with open(csv_file, newline='') as file:
+    #     reader = csv.DictReader(file)
+    #     for row in reader:
+    #         # code block to handle family
+    #         family = db.query(models.Family).filter(models.Family.name == row['Family']).first()
+    #         if not family:
+    #             family = models.Family(name=row['Family'])
+    #             db.add(family)
+    #             db.commit()
+    #             db.refresh(family)
             
-            #code to handle product
-            product = db.query(models.Product).filter(models.Product.id == row['Product ID']).first()
-            if not product:
-                product = models.Product(
-                    id=row["Product ID"],
-                    name=row["Product Name"],
-                    price=row["Price"],
-                    family_id=family.id,
-                )
-                db.add(product)
-                db.commit()
-                db.refresh(product)
-            #code to handle Sales
-            for month, sales in row.items():
-                if month.startswith("2024"):
-                    sale_date = datetime.strptime(month, "%Y-%m")
-                    sale = models.Sales(
-                        product_id=product.id,
-                        month=sale_date,
-                        sales_amount=int(sales),
-                    )
-                    db.add(sale)
-                    db.commit()
+    #         #code to handle product
+    #         product = db.query(models.Product).filter(models.Product.id == row['Product ID']).first()
+    #         if not product:
+    #             product = models.Product(
+    #                 id=row["Product ID"],
+    #                 name=row["Product Name"],
+    #                 price=row["Price"],
+    #                 family_id=family.id,
+    #             )
+    #             db.add(product)
+    #             db.commit()
+    #             db.refresh(product)
+    #         #code to handle Sales
+    #         for month, sales in row.items():
+    #             if month.startswith("2024"):
+    #                 sale_date = datetime.strptime(month, "%Y-%m")
+    #                 sale = models.Sales(
+    #                     product_id=product.id,
+    #                     month=sale_date,
+    #                     sales_amount=int(sales),
+    #                 )
+    #                 db.add(sale)
+    #                 db.commit()
 
 
 @router.get("/product/{product_id}")

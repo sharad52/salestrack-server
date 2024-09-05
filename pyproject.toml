@@ -17,6 +17,8 @@ alembic = "^1.13.2"
 pydantic-settings = "^2.4.0"
 databases = {extras = ["postgresql"], version = "^0.9.0"}
 pytest = "^8.3.2"
+pandas = "^2.2.2"
+openpyxl = "^3.1.5"
 
 
 [build-system]
