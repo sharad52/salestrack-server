@@ -17,35 +17,35 @@ from salestrack.dbconfig.db_config import get_db
 router = APIRouter(prefix="/sales", tags=["Sales"])
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schema.SalesResponse)
-async def create_product(payload: schema.SalesBaseSchema, db: Session = Depends(get_db)):
-    try:
-        sales = db.query(models.Sales).filter(models.Product.name == payload.name).first()
-        if not product:
-            product = models.Product(**payload.model_dump())
-            db.add(product)
-            db.commit()
-            db.refresh(product)
+# @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schema.SalesResponse)
+# async def create_product(payload: schema.SalesBaseSchema, db: Session = Depends(get_db)):
+#     try:
+#         sales = db.query(models.Sales).filter(models.Product.name == payload.name).first()
+#         if not product:
+#             product = models.Product(**payload.model_dump())
+#             db.add(product)
+#             db.commit()
+#             db.refresh(product)
 
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(
-            status_code=400, detail="Couldn't Create Family"
-        )
-    except DatabaseError:
-        db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail="Error occured in DB"
-        )
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Unexpected error: {e}"
-        )
-    product_schema = schema.ProductBaseSchema.model_validate(product)
-    return schema.ProductResponse(Status=schema.Status.Success, Product=product_schema)
+#     except IntegrityError:
+#         db.rollback()
+#         raise HTTPException(
+#             status_code=400, detail="Couldn't Create Family"
+#         )
+#     except DatabaseError:
+#         db.rollback()
+#         raise HTTPException(
+#             status_code=500,
+#             detail="Error occured in DB"
+#         )
+#     except Exception as e:
+#         db.rollback()
+#         raise HTTPException(
+#             status_code=500,
+#             detail=f"Unexpected error: {e}"
+#         )
+#     product_schema = schema.ProductBaseSchema.model_validate(product)
+#     return schema.ProductResponse(Status=schema.Status.Success, Product=product_schema)
 
 
 @router.get("/family", response_model=List[schema.AddFamily])
@@ -157,8 +157,9 @@ async def load_data(type: str = Form(...), file: UploadFile = File(...), db: Ses
         family = db.query(models.Family).filter(models.Family.name == family_name).first()
         if not family:
             new_family_data = {"name": family_name}
-            family = await create_family(schema.AddFamily(**new_family_data), db)
+            family = await create_family(schema.FamilyBaseSchema(**new_family_data), db)
         # product 
+        family_id = family.Family.id if isinstance(family, schema.FamilyResponse) else family.id
         product_name = row.get("Product Name")
         product_id = int(row.get("Product ID"))
         price = float(row.get("Price"))
@@ -166,18 +167,19 @@ async def load_data(type: str = Form(...), file: UploadFile = File(...), db: Ses
         # if product_id:
         product = db.query(models.Product).filter(models.Product.name == product_name).first()
         if not product:
-            new_product_data = {"id": product_id, "name": product_name, "family_id": family.id, "price": price}
-            product = await create_product(schema.AddProduct(**new_product_data), db)
+            new_product_data = {"id": product_id, "name": product_name, "family_id": family_id, "price": price}
+            product = await create_product(schema.ProductBaseSchema(**new_product_data), db)
 
         # Sales
         sales_dates = [date for date in df.columns if isinstance(date, datetime)]
         for each in sales_dates:
+            product_id = product.Product.id if isinstance(product, schema.ProductResponse) else product.id
             month_wise_sales = db.query(models.Sales).filter(
-                (models.Sales.sales_date == each) & (models.Sales.product_id == product.id)
+                (models.Sales.sales_date == each) & (models.Sales.product_id == product_id)
             ).first()
             if not month_wise_sales:
                 sales_data = {
-                    "product_id": product.id, 
+                    "product_id": product_id, 
                     "sales_date": each, 
                     "sales_amount": int(row.get(each))
                 }

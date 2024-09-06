@@ -56,7 +56,7 @@ class FamilyResponse(BaseModel):
 
 
 class ProductBaseSchema(BaseModel):
-    id: int | None = None
+    id: Optional[int] = None
     name: str = Field(
         ..., description="The name of the Product", examples="Candy"
     )
