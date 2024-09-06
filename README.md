@@ -18,3 +18,4 @@ pytest => for test cases
 
 pandas => to read data from excel
 
+passlib[bcrypt] ==> to get hashed password

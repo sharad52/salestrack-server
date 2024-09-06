@@ -38,6 +38,14 @@ class Settings(BaseSettings):
             path=f"/{values.data.get('POSTGRES_DB') or ''}",
         )
     
+    #JWT
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    REFRESH_TOKEN_EXPIRE_MINUTES: int
+    ALGORITHM: str
+    JWT_SECRET_KEY: str
+    JWT_REFRESH_SECRET_KEY: str
+    
+    #for testcase
     TEST_DB_URI: Union[Optional[PostgresDsn], str] = None
 
 settings = Settings()

@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
+from auth.entrypoints import users
+
 from salestrack.domain.models import Base
 from salestrack.core.config import settings
 from salestrack.dbconfig.db_config import engine
@@ -35,6 +37,7 @@ Base.metadata.create_all(bind=engine)
 
 
 app.include_router(services.router)
+app.include_router(users.router)
 # app.include_router(product_routes, prefix="/products", tags=["products"])
 
 

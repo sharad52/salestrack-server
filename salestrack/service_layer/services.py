@@ -3,11 +3,12 @@ import csv
 import pandas as pd
 from datetime import datetime, timedelta
 from typing import List
-from fastapi import APIRouter, File, UploadFile, Form
-from fastapi import HTTPException, Depends, status
+# from fastapi import HTTPException, Depends, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, DatabaseError
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends, status
+
 
 from salestrack.schemas import schema
 from salestrack.domain import models
@@ -15,37 +16,6 @@ from salestrack.dbconfig.db_config import get_db
 
 
 router = APIRouter(prefix="/sales", tags=["Sales"])
-
-
-# @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schema.SalesResponse)
-# async def create_product(payload: schema.SalesBaseSchema, db: Session = Depends(get_db)):
-#     try:
-#         sales = db.query(models.Sales).filter(models.Product.name == payload.name).first()
-#         if not product:
-#             product = models.Product(**payload.model_dump())
-#             db.add(product)
-#             db.commit()
-#             db.refresh(product)
-
-#     except IntegrityError:
-#         db.rollback()
-#         raise HTTPException(
-#             status_code=400, detail="Couldn't Create Family"
-#         )
-#     except DatabaseError:
-#         db.rollback()
-#         raise HTTPException(
-#             status_code=500,
-#             detail="Error occured in DB"
-#         )
-#     except Exception as e:
-#         db.rollback()
-#         raise HTTPException(
-#             status_code=500,
-#             detail=f"Unexpected error: {e}"
-#         )
-#     product_schema = schema.ProductBaseSchema.model_validate(product)
-#     return schema.ProductResponse(Status=schema.Status.Success, Product=product_schema)
 
 
 @router.get("/family", response_model=List[schema.AddFamily])
