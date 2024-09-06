@@ -150,7 +150,7 @@ async def load_data(type: str = Form(...), file: UploadFile = File(...), db: Ses
     contents = file.file.read()
     data = io.BytesIO(contents)
     df = pd.read_excel(data, engine='openpyxl')
-    for row in df.iloc:
+    for index, row in df.iterrows():
         # process excel data for db
         family_name = row.get("Family")
         # if family_name:
@@ -164,15 +164,27 @@ async def load_data(type: str = Form(...), file: UploadFile = File(...), db: Ses
         price = float(row.get("Price"))
 
         # if product_id:
-        product = db.query(models.Product).filter(models.Product.id == product_id).first()
+        product = db.query(models.Product).filter(models.Product.name == product_name).first()
         if not product:
             new_product_data = {"id": product_id, "name": product_name, "family_id": family.id, "price": price}
             product = await create_product(schema.AddProduct(**new_product_data), db)
 
         # Sales
-
-        
-
+        sales_dates = [date for date in df.columns if isinstance(date, datetime)]
+        for each in sales_dates:
+            month_wise_sales = db.query(models.Sales).filter(
+                (models.Sales.sales_date == each) & (models.Sales.product_id == product.id)
+            ).first()
+            if not month_wise_sales:
+                sales_data = {
+                    "product_id": product.id, 
+                    "sales_date": each, 
+                    "sales_amount": int(row.get(each))
+                }
+                month_wise_sales = models.Sales(**sales_data)
+                db.add(month_wise_sales)
+                db.commit()
+                db.refresh(month_wise_sales)
     data.close()
     file.file.close()
     return "Success!!!"
