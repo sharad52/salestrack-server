@@ -1,5 +1,6 @@
 import jwt
 from jwt.exceptions import InvalidTokenError
+from functools import wraps
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from fastapi import Request, HTTPException, status
@@ -41,6 +42,19 @@ def create_refresh_token(data: dict, expires_delta: timedelta | None = None) -> 
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
+
+
+def token_required(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        payload = jwt.decode(kwargs['dependencies'], settings.JWT_SECRET_KEY, settings.ALGORITHM)
+        user_id = payload['sub']
+        data = kwargs['session'].query(Token).filter_by(user_id=user_id, access_token=kwargs["dependencies"], status=True).first()
+        if data:
+            return func(kwargs['dependencies'], kwargs['session'])
+        else:
+            return {"message": "Unauthorized Token"}
+    return wrapper
 
 
 def decodeJWT(jwttoken: str):

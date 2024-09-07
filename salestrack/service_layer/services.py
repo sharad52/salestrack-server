@@ -13,15 +13,15 @@ from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends, s
 from salestrack.schemas import schema
 from salestrack.domain import models
 from salestrack.dbconfig.db_config import get_db
-from auth.utils.jwt_utils import jwt_bearer
+from auth.utils.jwt_utils import token_required
 
 
 router = APIRouter(prefix="/sales", tags=["Sales"])
 
 
+@token_required
 @router.get("/family", response_model=List[schema.AddFamily])
 async def list_family(
-    dependencies=Depends(jwt_bearer),
     db: Session = Depends(get_db)
 ):
     
@@ -162,52 +162,6 @@ async def load_data(type: str = Form(...), file: UploadFile = File(...), db: Ses
     data.close()
     file.file.close()
     return "Success!!!"
-
-    # import pdb
-    # pdb.set_trace()
-    # s = str(contents, 'utf-8')
-    # data = io.StringIO(s)
-    # df = pd.read_csv(data)
-    # data.close()
-    # file.file.close()
-    print("===testing data===", df)
-
-    
-
-    # with open(csv_file, newline='') as file:
-    #     reader = csv.DictReader(file)
-    #     for row in reader:
-    #         # code block to handle family
-    #         family = db.query(models.Family).filter(models.Family.name == row['Family']).first()
-    #         if not family:
-    #             family = models.Family(name=row['Family'])
-    #             db.add(family)
-    #             db.commit()
-    #             db.refresh(family)
-            
-    #         #code to handle product
-    #         product = db.query(models.Product).filter(models.Product.id == row['Product ID']).first()
-    #         if not product:
-    #             product = models.Product(
-    #                 id=row["Product ID"],
-    #                 name=row["Product Name"],
-    #                 price=row["Price"],
-    #                 family_id=family.id,
-    #             )
-    #             db.add(product)
-    #             db.commit()
-    #             db.refresh(product)
-    #         #code to handle Sales
-    #         for month, sales in row.items():
-    #             if month.startswith("2024"):
-    #                 sale_date = datetime.strptime(month, "%Y-%m")
-    #                 sale = models.Sales(
-    #                     product_id=product.id,
-    #                     month=sale_date,
-    #                     sales_amount=int(sales),
-    #                 )
-    #                 db.add(sale)
-    #                 db.commit()
 
 
 @router.get("/product/{product_id}")
