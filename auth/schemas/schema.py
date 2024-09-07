@@ -44,3 +44,21 @@ class UserResponse(BaseModel):
     User: UserBaseSchema
 
 
+class ChangePaaswordBaseSchema(BaseModel):
+    email: EmailStr = Field(
+        ..., description="The login email address", examples="abc@example.com"
+    )
+    old_password: str = Field(
+        ..., description="Old login password."
+    )
+    new_password: str = Field(
+        ..., description="New Password."
+    )
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+        arbitrary_types_allowed = True
+
+    
+

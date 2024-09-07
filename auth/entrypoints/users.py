@@ -80,4 +80,24 @@ async def login(payload: schema.UserBaseSchema, db: Session = Depends(get_db)):
     }
     token_schema = schema.TokenCreateSchema.model_validate(token_data)
     return schema.TokenCreateResponse(Status=status_enum.Success, Token=token_schema)
-        
+
+
+@router.post("/change-password")
+def change_password(payload: schema.ChangePaaswordBaseSchema, db: Session = Depends(get_db)):
+    try:
+        user = db.query(User).filter(User.email == payload.email).first()
+        if not user:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found.")
+        if not jwt_utils.verify_password(payload.old_password, user.password):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password doesnot match")
+        hashed_password = jwt_utils.get_hashed_password(payload.new_password)
+        user.password = hashed_password
+        db.commit()
+        db.refresh(user)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error: {e}")
+
+    return {
+        "message": "Your Password has been changes Successfully.", "success": True, "status_code": status.HTTP_200_OK
+    }
