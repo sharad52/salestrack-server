@@ -13,6 +13,7 @@ from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends, s
 from salestrack.schemas import schema
 from salestrack.domain import models
 from salestrack.dbconfig.db_config import get_db
+from auth.utils.jwt_utils import jwt_bearer
 
 
 router = APIRouter(prefix="/sales", tags=["Sales"])
@@ -20,6 +21,7 @@ router = APIRouter(prefix="/sales", tags=["Sales"])
 
 @router.get("/family", response_model=List[schema.AddFamily])
 async def list_family(
+    dependencies=Depends(jwt_bearer),
     db: Session = Depends(get_db)
 ):
     
