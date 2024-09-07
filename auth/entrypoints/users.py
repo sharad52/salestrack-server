@@ -1,4 +1,5 @@
-
+import jwt
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from fastapi import status, APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError, DatabaseError
@@ -8,6 +9,7 @@ from auth.domain.models import User, Token
 from auth.utils import jwt_utils
 from salestrack.dbconfig.db_config import get_db
 from salestrack.schemas.schema import Status as status_enum
+from salestrack.core.config import settings
 
 
 router = APIRouter(prefix="/user", tags=["User"])
@@ -80,6 +82,35 @@ async def login(payload: schema.UserBaseSchema, db: Session = Depends(get_db)):
     }
     token_schema = schema.TokenCreateSchema.model_validate(token_data)
     return schema.TokenCreateResponse(Status=status_enum.Success, Token=token_schema)
+
+
+@router.post('/logout')
+async def logout(dependencies=Depends(jwt_utils.jwt_bearer), db: Session = Depends(get_db)):
+    try:
+        token = dependencies
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY, settings.ALGORITHM)
+        user_id = payload.get("sub")
+        get_all_user_tokens = db.query(Token).all()
+        info = []
+        for each in get_all_user_tokens:
+            if (datetime.now(timezone.utc) - each.created_date.replace(tzinfo=timezone.utc)).days > 1:
+                info.append(each.user_id)
+        if info: 
+            existing_token = db.query(Token).where(Token.user_id.in_(info)).delete()
+            db.commit()
+        existing_token = db.query(Token).filter(Token.user_id == user_id, Token.access_token == token).first()
+        if existing_token:
+            existing_token.status=False
+            db.add(existing_token)
+            db.commit()
+            db.refresh(existing_token)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error: {e}")
+
+    return {
+        "message": "Successfully Logout"
+    }
 
 
 @router.post("/change-password")
