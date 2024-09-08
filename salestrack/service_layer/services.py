@@ -1,20 +1,18 @@
 import io
-import csv
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List
-# from fastapi import HTTPException, Depends, status
-from sqlalchemy import func
+from sqlalchemy import extract
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError, DatabaseError
+from sqlalchemy.exc import IntegrityError
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends, status
-
+from fastapi.responses import JSONResponse
 
 from salestrack.schemas import schema
 from salestrack.domain import models
 from salestrack.service_layer import helper
 from salestrack.dbconfig.db_config import get_db
-from auth.utils.jwt_utils import jwt_bearer, token_required
+from auth.utils.jwt_utils import token_required
 
 
 router = APIRouter(prefix="/sales", tags=["Sales"])
@@ -177,31 +175,29 @@ async def load_data(type: str = Form(...), file: UploadFile = File(...), db: Ses
         "message": "excel data loaded successfully"
     }
 
-
-@router.get("/products/")
-async def list_products(db: Session = Depends(get_db)):
-    products = await db.query(models.Product).all()
-    return [{
-        "id": product.id, 
-        "name": product.name, 
-        "family": product.family.name, 
-        "price": product.price
-        } for product in products
-    ]
-
-
-@router.get("/product/{product_id}/last_year_sales")
-async def get_sales_last_year(product_id: int, db: Session = Depends(get_db)):
-    today = datetime.today()
-    last_year = today - timedelta(days=365)
+#Get sum of product sales from last year
+@token_required
+@router.get("/last-year", status_code=status.HTTP_200_OK)
+async def get_sum_of_previous_year_sales(db: Session = Depends(get_db)):
+    try:
+        current_year = datetime.today().year
+        previous_year = (current_year - 1)
+        get_all_sales = db.query(models.Sales).filter(
+            extract('year', models.Sales.sales_date) == previous_year
+        ).all()
+        total_sales = sum(sale.sales_amount for sale in get_all_sales)
+        data = {
+            "Total Sales in Previous Year": f"Rs. {total_sales}"
+        }
     
-    sales_sum = (
-        db.query(func.sum(models.Sales.sales_amount))
-        .filter(models.Sales.product_id == product_id)
-        .filter(models.Sales.sales_date >= last_year)
-        .scalar()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error has occured: {e}"
+        )
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=data,
+        media_type="application/json"
     )
 
-    if sales_sum is None:
-        raise HTTPException(status_code=404, detail="No Sales data found")
-    return {"product_id": product_id, "total_last_year_sales": sales_sum}
