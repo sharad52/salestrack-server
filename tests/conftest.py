@@ -5,8 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 from salestrack.main import app
-from salestrack.dbconfig.db_config import get_db
-from salestrack.domain.models import Base
+from salestrack.dbconfig.db_config import get_db, Base
 from salestrack.core.config import settings
 
 

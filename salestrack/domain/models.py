@@ -1,37 +1,36 @@
-import sqlalchemy as sa
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import Column, Integer, Float, String, ForeignKey, Date
 
+from salestrack.dbconfig.db_config import Base
 
-Base = declarative_base()
 
 class Family(Base):
     __tablename__ = 'family'
     
-    id = sa.Column(sa.Integer, primary_key=True, index=True)
-    name = sa.Column(sa.String, index=True)
-
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True)
 
 class Product(Base):
     __tablename__ = "product"
 
-    id = sa.Column(sa.Integer, primary_key=True, index=True)
-    name = sa.Column(sa.String, index=True)
-    family_id = sa.Column(sa.Integer, sa.ForeignKey("family.id"))
-    price = sa.Column(sa.Float)
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True)
+    family_id = Column(Integer, ForeignKey("family.id"))
+    price = Column(Float)
 
-    family = sa.orm.relationship('Family')
+    family = relationship('Family')
 
 
 class Sales(Base):
     __tablename__ = "sales"
 
-    id = sa.Column(sa.Integer, primary_key=True, index=True)
-    product_id = sa.Column(sa.Integer, sa.ForeignKey("product.id"))
-    sales_date = sa.Column(sa.Date)
-    sales_amount = sa.Column(sa.Integer)
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("product.id"))
+    sales_date = Column(Date)
+    sales_amount = Column(Integer)
 
-    product = sa.orm.relationship('Product')
+    product = relationship('Product')
 
     @hybrid_property
     def year_month(self):

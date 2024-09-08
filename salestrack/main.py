@@ -38,15 +38,4 @@ Base.metadata.create_all(bind=engine)
 
 app.include_router(services.router)
 app.include_router(users.router)
-# app.include_router(product_routes, prefix="/products", tags=["products"])
 
-
-
-# @app.get("/")
-# async def root():
-#     return {"message": "Hello World"}
-
-
-# @app.get("/hello/{name}")
-# async def say_hello(name: str):
-#     return {"message": f"Hello {name}"}
