@@ -1,6 +1,6 @@
 from salestrack.domain.models import Family
 
-# Test GET family (Success case)
+# GET family (Success case)
 def test_get_family_success(test_client, db_session, family_payload):
     family = Family(**family_payload)
     db_session.add(family)
@@ -11,13 +11,13 @@ def test_get_family_success(test_client, db_session, family_payload):
     assert data['Status'] == 'Success'
     assert data['Family']['name'] == family_payload['name']
 
-# Test GET family (Failure case - Family not found)
+# GET family (Failure case - Family not found)
 def test_get_family_not_found(test_client):
     response = test_client.get("sales/family/99999") 
     assert response.status_code == 404
     assert response.json()['detail'] == "No product found for id: 99999"
 
-# Test POST family (Success case)
+# POST family (Success case)
 def test_create_family_success(test_client, family_payload):
     response = test_client.post("sales/family", json=family_payload)
     assert response.status_code == 201
@@ -25,7 +25,7 @@ def test_create_family_success(test_client, family_payload):
     assert data['Status'] == 'Success'
     assert data['Family']['name'] == family_payload['name']
 
-# Test POST family (Failure case - Invalid input)
+# POST family (Failure case - Invalid input)
 def test_create_family_invalid_input(test_client):
     invalid_data = {
         "description": "Missing name"

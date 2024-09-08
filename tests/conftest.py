@@ -61,3 +61,25 @@ def family_payload(item_id):
         "name": "Book"
     }
 
+
+@pytest.fixture()
+def product_payload(item_id, family_payload):
+    """Sample payload for product"""
+    return {
+        "id": item_id,
+        "name": "Atomic Habbits",
+        "family_id": family_payload['id'],
+        "price": 1350
+    }
+
+
+@pytest.fixture()
+def product_payload_updated(item_id, family_payload):
+    """Sample payload for updated Product"""
+    return {
+        "id": item_id,
+        "name": "Ikigai",
+        "family_id": family_payload["id"],
+        "price": 1200
+    }
+

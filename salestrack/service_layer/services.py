@@ -81,15 +81,10 @@ async def update_family(id: int, payload: schema.FamilyBaseSchema, db: Session =
 @token_required
 @router.get("/product/{id}", status_code=status.HTTP_200_OK, response_model=schema.ProductResponse)
 async def get_product(id: int, db: Session = Depends(get_db)):
-    try:
-        product = db.query(models.Product).filter(models.Product.id == id).first()
-        if not product:
-            raise HTTPException(status_code=404, detail=f"No product found for id: {id}")
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Unexpected Error has occured.{e}"
-        )
+    product_query = db.query(models.Product).filter(models.Product.id == id)
+    product = product_query.first()
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No product found for id: {id}")
     product_schema = schema.ProductBaseSchema.model_validate(product)
     return schema.ProductResponse(Status=schema.Status.Success, Product=product_schema)
 
