@@ -31,6 +31,16 @@ async def list_family(
 
 
 @token_required
+@router.get("/family/{id}", status_code=status.HTTP_200_OK, response_model=schema.FamilyResponse)
+async def get_family(id: int, db: Session = Depends(get_db)):
+    family = db.query(models.Family).filter(models.Family.id == id).first()
+    if not family:
+        raise HTTPException(status_code=404, detail=f"No product found for id: {id}")
+    family_schema = schema.FamilyBaseSchema.model_validate(family)
+    return schema.FamilyResponse(Status=schema.Status.Success, Family=family_schema)
+
+
+@token_required
 @router.post("/family", status_code=status.HTTP_201_CREATED, response_model=schema.FamilyResponse)
 async def create_family(post_family: schema.AddFamily, db: Session = Depends(get_db)):
     new_family = await helper.create_family_in_db(post_family, db)

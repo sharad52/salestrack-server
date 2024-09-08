@@ -2,7 +2,6 @@ import pytest
 import random
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 from salestrack.main import app
 from salestrack.dbconfig.db_config import get_db, Base
@@ -11,11 +10,7 @@ from salestrack.core.config import settings
 
 TEST_DB_URL = settings.TEST_DB_URI
 
-engine = create_engine(
-    TEST_DB_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool
-)
+engine = create_engine(TEST_DB_URL)
 
 #Session Maker to manage session
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -25,15 +20,18 @@ Base.metadata.create_all(bind=engine)
 
 @pytest.fixture(scope="function")
 def db_session():
-    """New DB session with a rollback at end"""
-    connection = engine.connect()
-    transaction = connection.begin()
-    session = TestingSessionLocal(bind=connection)
-    yield session
-    session.close()
-    transaction.rollback()
-    connection.close()
-
+    try:
+        """New DB session with a rollback at end"""
+        connection = engine.connect()
+        print("Connection succesful!!!.")
+        transaction = connection.begin()
+        session = TestingSessionLocal(bind=connection)
+        yield session
+        session.close()
+        transaction.rollback()
+        connection.close()
+    except Exception as e:
+        print(f"Connection failed: {e}")
 
 @pytest.fixture(scope="function")
 def test_client(db_session):
@@ -56,9 +54,10 @@ def item_id() -> int:
 
 
 @pytest.fixture()
-def family_payload():
+def family_payload(item_id):
     """Sample payload for family"""
     return {
+        "id": item_id,
         "name": "Book"
     }
 
