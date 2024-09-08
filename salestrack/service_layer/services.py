@@ -76,7 +76,23 @@ async def update_family(id: int, payload: schema.FamilyBaseSchema, db: Session =
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occured while updating the Family."
         ) from e
-    
+
+
+@token_required
+@router.get("/product/{id}", status_code=status.HTTP_200_OK, response_model=schema.ProductResponse)
+async def get_product(id: int, db: Session = Depends(get_db)):
+    try:
+        product = db.query(models.Product).filter(models.Product.id == id).first()
+        if not product:
+            raise HTTPException(status_code=404, detail=f"No product found for id: {id}")
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Unexpected Error has occured.{e}"
+        )
+    product_schema = schema.ProductBaseSchema.model_validate(product)
+    return schema.ProductResponse(Status=schema.Status.Success, Product=product_schema)
+
 
 @token_required
 @router.post("/product", status_code=status.HTTP_201_CREATED, response_model=schema.ProductResponse)
@@ -84,6 +100,35 @@ async def create_product(payload: schema.ProductBaseSchema, db: Session = Depend
     product = await helper.create_product_in_db(payload, db)
     product_schema = schema.ProductBaseSchema.model_validate(product)
     return schema.ProductResponse(Status=schema.Status.Success, Product=product_schema)
+
+
+@token_required
+@router.patch("/product/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=schema.ProductResponse)
+async def update_product(id: int, payload: schema.UpdateProductSchema, db: Session = Depends(get_db)):
+    product_query = db.query(models.Product).filter(models.Product.id == id).first()
+    if not product_query:
+        raise HTTPException(status_code=404, detail=f"No product found for id: {id}")
+    try:
+        data = payload.model_dump(exclude_unset=True)
+        for key, value in data.items():
+            setattr(product_query, key, value)
+        db.add(product_query)
+        db.commit()
+        db.refresh(product_query)
+        product_schema = schema.ProductBaseSchema.model_validate(product_query)
+        return schema.ProductResponse(Status=schema.Status.Success, Product=product_schema)
+    except IntegrityError as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A Product with the given details already exist"
+        ) from e
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occured while updating product."
+        ) from e
     
 
 @token_required
@@ -145,50 +190,6 @@ async def list_products(db: Session = Depends(get_db)):
         } for product in products
     ]
 
-
-@token_required
-@router.get("/product/{product_id}")
-async def get_product(product_id: int, db: Session = Depends(get_db)):
-    product = db.query(models.Product).filter(models.Product.id == product_id).first()
-    if not product:
-        raise HTTPException(status_code=404, detail=f"No product found for id: {product_id}")
-    sales = db.query(models.Sales).filter(models.Sales.product_id == product_id).all()
-    return {
-        "product": product.name,
-        "family": product.family.name,
-        "price": product.price,
-        "sales": [{"month": sale.month, "amount": sale.sales_amount} for sale in sales]
-    }
-
-
-@router.patch("/product/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=schema.ProductResponse)
-async def update_product(id: int, payload: schema.UpdateProductSchema, db: Session = Depends(get_db)):
-    product_query = db.query(models.Product).filter(models.Product.id == id).first()
-    if not product_query:
-        raise HTTPException(status_code=404, detail=f"No product found for id: {id}")
-    try:
-        data = payload.model_dump(exclude_unset=True)
-        for key, value in data.items():
-            setattr(product_query, key, value)
-        db.add(product_query)
-        db.commit()
-        db.refresh(product_query)
-        print(product_query)
-        product_schema = schema.ProductBaseSchema.model_validate(product_query)
-        return schema.ProductResponse(Status=schema.Status.Success, Product=product_schema)
-    except IntegrityError as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="A Product with the given details already exist"
-        ) from e
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occured while updating product."
-        ) from e
-    
 
 @router.get("/product/{product_id}/last_year_sales")
 async def get_sales_last_year(product_id: int, db: Session = Depends(get_db)):
