@@ -187,7 +187,7 @@ async def get_sum_of_previous_year_sales(db: Session = Depends(get_db)):
         ).all()
         total_sales = sum(sale.sales_amount for sale in get_all_sales)
         data = {
-            "Total Sales in Previous Year": f"Rs. {total_sales}"
+            "total_sales_last_year": f"Rs. {total_sales}"
         }
     
     except Exception as e:
