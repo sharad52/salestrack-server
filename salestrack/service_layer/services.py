@@ -2,7 +2,7 @@ import io
 import pandas as pd
 from datetime import datetime
 from typing import List
-from sqlalchemy import extract
+from sqlalchemy import extract, func
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends, status
@@ -182,10 +182,11 @@ async def get_sum_of_previous_year_sales(db: Session = Depends(get_db)):
     try:
         current_year = datetime.today().year
         previous_year = (current_year - 1)
-        get_all_sales = db.query(models.Sales).filter(
+        total_previous_sales = db.query(func.sum(models.Sales.sales_amount)).filter(
             extract('year', models.Sales.sales_date) == previous_year
-        ).all()
-        total_sales = sum(sale.sales_amount for sale in get_all_sales)
+        ).scalar()
+
+        total_sales = total_previous_sales if total_previous_sales is not None else 0
         data = {
             "total_sales_last_year": f"Rs. {total_sales}"
         }
