@@ -12,8 +12,9 @@ from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends, s
 
 from salestrack.schemas import schema
 from salestrack.domain import models
+from salestrack.service_layer import helper
 from salestrack.dbconfig.db_config import get_db
-from auth.utils.jwt_utils import token_required
+from auth.utils.jwt_utils import jwt_bearer, token_required
 
 
 router = APIRouter(prefix="/sales", tags=["Sales"])
@@ -29,34 +30,15 @@ async def list_family(
     return family
 
 
+@token_required
 @router.post("/family", status_code=status.HTTP_201_CREATED, response_model=schema.FamilyResponse)
 async def create_family(post_family: schema.AddFamily, db: Session = Depends(get_db)):
-    try:
-        new_family = models.Family(**post_family.model_dump())
-        db.add(new_family)
-        db.commit()
-        db.refresh(new_family)
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(
-            status_code=400, detail="Couldn't Create Family"
-        )
-    except DatabaseError:
-        db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail="Error occured in DB"
-        )
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Unexpected error: {e}"
-        )
+    new_family = await helper.create_family_in_db(post_family, db)
     family_schema = schema.FamilyBaseSchema.model_validate(new_family)
     return schema.FamilyResponse(Status=schema.Status.Success, Family=family_schema)
     
 
+@token_required
 @router.patch("/family/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=schema.FamilyResponse)
 async def update_family(id: int, payload: schema.FamilyBaseSchema, db: Session = Depends(get_db)):
     family = db.query(models.Family).filter(models.Family.id == id).first()
@@ -86,37 +68,15 @@ async def update_family(id: int, payload: schema.FamilyBaseSchema, db: Session =
         ) from e
     
 
+@token_required
 @router.post("/product", status_code=status.HTTP_201_CREATED, response_model=schema.ProductResponse)
 async def create_product(payload: schema.ProductBaseSchema, db: Session = Depends(get_db)):
-    try:
-        product = db.query(models.Product).filter(models.Product.name == payload.name).first()
-        if not product:
-            product = models.Product(**payload.model_dump())
-            db.add(product)
-            db.commit()
-            db.refresh(product)
-
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(
-            status_code=400, detail="Couldn't Create Family"
-        )
-    except DatabaseError:
-        db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail="Error occured in DB"
-        )
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Unexpected error: {e}"
-        )
+    product = await helper.create_product_in_db(payload, db)
     product_schema = schema.ProductBaseSchema.model_validate(product)
     return schema.ProductResponse(Status=schema.Status.Success, Product=product_schema)
     
 
+@token_required
 @router.post("/load-data")
 async def load_data(type: str = Form(...), file: UploadFile = File(...), db: Session = Depends(get_db)):
     contents = file.file.read()
@@ -129,7 +89,7 @@ async def load_data(type: str = Form(...), file: UploadFile = File(...), db: Ses
         family = db.query(models.Family).filter(models.Family.name == family_name).first()
         if not family:
             new_family_data = {"name": family_name}
-            family = await create_family(schema.FamilyBaseSchema(**new_family_data), db)
+            family = await helper.create_family_in_db(schema.FamilyBaseSchema(**new_family_data), db)
         # product 
         family_id = family.Family.id if isinstance(family, schema.FamilyResponse) else family.id
         product_name = row.get("Product Name")
@@ -140,7 +100,7 @@ async def load_data(type: str = Form(...), file: UploadFile = File(...), db: Ses
         product = db.query(models.Product).filter(models.Product.name == product_name).first()
         if not product:
             new_product_data = {"id": product_id, "name": product_name, "family_id": family_id, "price": price}
-            product = await create_product(schema.ProductBaseSchema(**new_product_data), db)
+            product = await helper.create_product_in_db(schema.ProductBaseSchema(**new_product_data), db)
 
         # Sales
         sales_dates = [date for date in df.columns if isinstance(date, datetime)]
