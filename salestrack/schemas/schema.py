@@ -73,6 +73,12 @@ class ProductBaseSchema(BaseModel):
         arbitrary_types_allowed = True
 
 
+class UpdateProductSchema(ProductBaseSchema):
+    name: Optional[str] = None
+    family_id: Optional[int] = None
+    price: Optional[int] = None
+
+
 class ProductResponse(BaseModel):
     Status: Status
     Product: ProductBaseSchema

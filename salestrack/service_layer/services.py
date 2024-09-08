@@ -134,6 +134,19 @@ async def load_data(type: str = Form(...), file: UploadFile = File(...), db: Ses
     return "Success!!!"
 
 
+@router.get("/products/")
+async def list_products(db: Session = Depends(get_db)):
+    products = await db.query(models.Product).all()
+    return [{
+        "id": product.id, 
+        "name": product.name, 
+        "family": product.family.name, 
+        "price": product.price
+        } for product in products
+    ]
+
+
+@token_required
 @router.get("/product/{product_id}")
 async def get_product(product_id: int, db: Session = Depends(get_db)):
     product = db.query(models.Product).filter(models.Product.id == product_id).first()
@@ -148,25 +161,34 @@ async def get_product(product_id: int, db: Session = Depends(get_db)):
     }
 
 
-@router.get("/products/")
-async def list_products(db: Session = Depends(get_db)):
-    products = await db.query(models.Product).all()
-    return [{
-        "id": product.id, 
-        "name": product.name, 
-        "family": product.family.name, 
-        "price": product.price
-        } for product in products
-    ]
-
-@router.put("/product/{product_id}")
-async def update_product(update_data: schema.AddProduct, product_id: int, db: Session = Depends(get_db)):
-    updated_product = db.query(models.Product).filter(models.Product.id == product_id)
-    if updated_product.first() is None:
-        raise HTTPException(status_code=404, detail=f"No product found for id: {product_id}")
-    updated_product.update(update_data.model_dump(), synchronize_session=False)
-    db.commit()
-    return updated_product.first()
+@router.patch("/product/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=schema.ProductResponse)
+async def update_product(id: int, payload: schema.UpdateProductSchema, db: Session = Depends(get_db)):
+    product_query = db.query(models.Product).filter(models.Product.id == id).first()
+    if not product_query:
+        raise HTTPException(status_code=404, detail=f"No product found for id: {id}")
+    try:
+        data = payload.model_dump(exclude_unset=True)
+        for key, value in data.items():
+            setattr(product_query, key, value)
+        db.add(product_query)
+        db.commit()
+        db.refresh(product_query)
+        print(product_query)
+        product_schema = schema.ProductBaseSchema.model_validate(product_query)
+        return schema.ProductResponse(Status=schema.Status.Success, Product=product_schema)
+    except IntegrityError as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A Product with the given details already exist"
+        ) from e
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occured while updating product."
+        ) from e
+    
 
 @router.get("/product/{product_id}/last_year_sales")
 async def get_sales_last_year(product_id: int, db: Session = Depends(get_db)):
