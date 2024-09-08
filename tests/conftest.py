@@ -83,3 +83,16 @@ def product_payload_updated(item_id, family_payload):
         "price": 1200
     }
 
+
+@pytest.fixture()
+def excel_load_data_payload():
+    """Mock Excel Data"""
+    data = {
+        'Family': ['Electronics', 'Books'],
+        'Product Name': ['Laptop', 'Fluent Python'],
+        'Product ID': [101, 102],
+        'Price': [999.99, 29.99],
+        '2024-01-01': [10, 5],
+        '2024-02-01': [15, 10]
+    }
+    return data

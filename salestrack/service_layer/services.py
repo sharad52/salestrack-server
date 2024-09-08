@@ -171,7 +171,11 @@ async def load_data(type: str = Form(...), file: UploadFile = File(...), db: Ses
                 db.refresh(month_wise_sales)
     data.close()
     file.file.close()
-    return "Success!!!"
+    return {
+        "Status": schema.Status.Success,
+        "status_code": status.HTTP_201_CREATED,
+        "message": "excel data loaded successfully"
+    }
 
 
 @router.get("/products/")
