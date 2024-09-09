@@ -38,6 +38,55 @@ A prototype of salestrack server made with FastAPI
 | Retrieve total sales of last year | GET         | `/sales/last-year/`                       | This endpoint will retrieve total sales of last year    |
 
 
+## Screenshots
+![image](url)
+![image][url]
+
+## Installation
+1. **Clone the repository:**
+  ```bash
+  git clone git@github.com:sharad52/salestrack-server.git
+  ```
+  OR
+  Extract the zip file and open In your IDE(e.g. VS Code/Atom/pycharm)
+
+  Also install Poetry i am using poetry to manage the project here.
+2. **Navigate to the project directory**
+  ```bash
+    salestrack-server
+    ```
+3. **Create a virtual environment**
+  Using pyenv 
+  ```bash
+  pyenv create virtualenv virtualenv_name python_version(here 3.12.3)
+  ```
+  or using python
+  ```bash
+  python -m venv environment_name
+  ```
+
+4. **Activate virtual environment**
+  ```bash
+  pyenv activate virtualenv_name
+  ```
+
+
+5. **Install Dependencies**
+ I am using poetry in this project.
+ Using poetry
+ ```bash
+ poetry install
+ ```
+6. **Nvaigate to the project direcotry and Active Poetry Shell**
+  ```bash
+  Poetry Shell
+  ```
+7. **Run the project**
+  ```bash
+    poetry run cli salestrack serve
+    ```
+ 
+
 
 
 
