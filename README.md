@@ -39,19 +39,32 @@ A prototype of salestrack server made with FastAPI
 
 
 ## Screenshots
-![image](https://github.com/sharad52/salestrack-server/blob/master/screenshots/change_password.png)
+![image](https://github.com/sharad52/salestrack-server/blob/master/screenshots/change_password.png) 
+
 ![image][https://github.com/sharad52/salestrack-server/blob/master/screenshots/create_family.png]
+
 ![image][https://github.com/sharad52/salestrack-server/blob/master/screenshots/create_product.png]
+
 ![image][https://github.com/sharad52/salestrack-server/blob/master/screenshots/get_family_by_id.png]
+
 ![image][https://github.com/sharad52/salestrack-server/blob/master/screenshots/get_product.png]
+
 ![image][https://github.com/sharad52/salestrack-server/blob/master/screenshots/get_total_sales_of_last_year.png]
+
 ![image][https://github.com/sharad52/salestrack-server/blob/master/screenshots/list_product.png]
+
 ![image][https://github.com/sharad52/salestrack-server/blob/master/screenshots/load_data_from_excel.png]
+
 ![image][https://github.com/sharad52/salestrack-server/blob/master/screenshots/login.png]
+
 ![image][https://github.com/sharad52/salestrack-server/blob/master/screenshots/logout.png]
+
 ![image][https://github.com/sharad52/salestrack-server/blob/master/screenshots/signup.png]
+
 ![image][https://github.com/sharad52/salestrack-server/blob/master/screenshots/testcase.png]
+
 ![image][https://github.com/sharad52/salestrack-server/blob/master/screenshots/update_product.png]
+
 ## Installation
 1. **Clone the repository:**
   ```bash
