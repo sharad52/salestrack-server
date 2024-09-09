@@ -1,3 +1,24 @@
+# Salestrack Server With FastAPI
+
+A prototype of salestrack server made with FastAPI 
+
+## Table of Contents
+
+- [SalesTrack with Fast API Framework](#)
+  - [Table of Contents](#table-of-contents)
+  - [Demo](#demo)
+  - [Features](#features)
+  - [Technologies Used](#technologies-used)
+  - [API Endpoints](#api-endpoints)
+  - [Screenshots](#screenshots)
+  - [Installation](#installation)
+  - [Usage](#usage)
+
+
+
+
+
+
 Poetry - to manage 
 fire - for Cli
 
