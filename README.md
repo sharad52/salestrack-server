@@ -84,30 +84,36 @@ A prototype of salestrack server made with FastAPI
 7. **Run the project**
   ```bash
     poetry run cli salestrack serve
-    ```
- 
+  ```
+8. **To run unit tests**
+  ```bash
+  pytest -v
+  ```
+
+## Technologies Used
+- **FastAPI:**
+  - FastAPI is a web framework for building HTTP-based service APIs in Python 3.8+. It uses Pydantic and type hints to validate, serialize and deserialize data. FastAPI also automatically generates OpenAPI documentation for APIs built with it.
+- **PostgreSQL**
+  - A powerful open-source relational database management system used for data storage.
+- **SQLAlchemy**
+  - An SQL toolkit and Object-Relational Mapping (ORM) library for Python, useful for database interactions.
+- **Psycopg2**
+  - to connect sqlalchemy and postgresql
+- **fire**
+  - Python Fire is a library for automatically generating command line interfaces (CLIs) with a single line of code.
+- **Poetry**
+  - Poetry is a tool for dependency management and packaging in Python.
+- **uvicorn**
+  - A lightweight ASGI server that serves FastAPI applications. It is used for running FastAPI applications.
+- **Python version**
+  -3.12.3
+- **pytest**
+  - Python testing framework to write and test unit testcases.
+- **pandas**
+  - Used for data manipulation and analysis and retrieve data from excel
+- **passlib**
+  - A password hashing library for Python
+- **PyJWT**
+  - A Python library which allows you to encode and decode JSON Web Tokens (JWT). 
 
 
-
-
-Poetry - to manage 
-fire - for Cli
-
-sqlalchemy - orm to manage database
-
-to run a project
-``` poetry run cli salestrack serve
-```
-
-psycopg2 - to connect sqlalchemy and postgresql
-
-uvicorn
-
-python --version: 3.12.3
-
-<!-- alembic -- database migration tool to simplify the porcess of managing database changes. -->
-pytest => for test cases
-
-pandas => to read data from excel
-
-passlib[bcrypt] ==> to get hashed password
