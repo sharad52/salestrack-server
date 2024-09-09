@@ -116,4 +116,14 @@ A prototype of salestrack server made with FastAPI
 - **PyJWT**
   - A Python library which allows you to encode and decode JSON Web Tokens (JWT). 
 
+## Usage
+1. **Mange product and environment**
+  - copy env.sample and place as .env in your project and change variables as you wish to use.
+2. **Run the FastAPI development Server**
+  - ```bash
+    poetry run cli salestrack serve
+    ```
+    The API will be accessible at [http://localhost:8000/]
+
+
 
