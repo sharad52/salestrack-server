@@ -33,7 +33,7 @@ class UserBaseSchema(BaseModel):
         ..., description="The password of user", examples="Password@123"
     )
 
-    class Config:
+    class ConfigDict:
         from_attributes = True
         populate_by_name = True
         arbitrary_types_allowed = True

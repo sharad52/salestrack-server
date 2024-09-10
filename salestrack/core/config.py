@@ -1,9 +1,18 @@
-from typing import Any, Dict, List, Optional, Union
+""" """
+from pydantic import Field
+from typing import Any, List, Optional, Union
+from pydantic_settings import SettingsConfigDict
 from pydantic import AnyHttpUrl, PostgresDsn, field_validator, ValidationInfo
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from salestrack.core.common import BaseSettings, APPEnvironment
+from salestrack.core.jwt import JWTSettings
+from salestrack.core.db import DatabaseSettings
 
 
 class Settings(BaseSettings):
+    environment: APPEnvironment = Field(default=APPEnvironment.production)
+    jwt: JWTSettings = Field(validation_alias="JWT")
+    db: DatabaseSettings = Field(validation_alias="DB")
+
     PROJECT_NAME: str
     BACKEND_CORS_ORIGINS: Union[List[AnyHttpUrl], List[str]] = []
     
