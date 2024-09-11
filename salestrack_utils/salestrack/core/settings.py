@@ -26,6 +26,7 @@ class CoreSettings(BaseSettings):
 
     #postgres Settings
     pg_dsn: PostgresDsn
+    pg_schema: str = "public"
     pg_min_size: int = 5
     pg_max_size: int = 10
     pg_use_ssl: bool = True

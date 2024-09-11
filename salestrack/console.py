@@ -1,11 +1,14 @@
 from __future__ import annotations
 import uvicorn
+from salestrack.core import config
 
 
 class CliCommand:
     """SalesTrack cli command"""
     def __init__(self) -> None:
-        pass
+        _settings = config.get_application_settings()
+        # self.alembic = AlembicCommand # TODO: 
+
 
     def serve(self, host: str = "127.0.0.1", port: int = 8000):
         """Serves the SalesTrack Server/API"""
