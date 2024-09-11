@@ -9,7 +9,7 @@ readme = "README.md"
 python = "^3.10"
 
 packages = [
-    { include = "salestrack" }
+    { include = "salestrack", from = "salestrack_utils" },
 ]
 
 [build-system]
