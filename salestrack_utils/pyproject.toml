@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "salestrack"
+version = "0.1.0"
+description = "Salestrack utilities to provide addon and resources to the application"
+authors = ["ersharad <sharad@krispcallmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+packages = [
+    { include = "salestrack" }
+]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
