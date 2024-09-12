@@ -12,6 +12,7 @@ packages = [
 
 [tool.poetry.dev-dependencies]
 salestrack-utils = {path = "salestrack_utils", develop = true}
+salestrackapi = {path="salestrackapi", develop=true}
 
 [tool.poetry.dependencies]
 python = "^3.10"

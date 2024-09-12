@@ -2,15 +2,15 @@ import typing
 from pathlib import Path
 from alembic import command
 from alembic.config import Config
-from salestrackapi.core.settings import CoreSettings
-from salestrackapi.addon.databases.alembic import constants
-# from salestrack_utils.salestrack.core.utils import resolve_component_module_location
-from salestrackapi.core.utils import resolve_component_module_location
+from salestrack_utils.core.settings import CoreSettings
+from salestrack_utils.addon.databases.alembic import constants
+from salestrack_utils.core.utils import resolve_component_module_locations
 
 
 def get_alembic_config() -> Config:
     """return alembic config object"""
     alembic_path = Path(constants.__file__).parent
+    # import pdb; pdb.set_trace()
     alembic_ini_file = alembic_path.joinpath("alembic.ini")
     config = Config(str(alembic_ini_file))
     config.set_main_option("script_location", str(alembic_path))
@@ -28,7 +28,7 @@ class AlembicCommand:
         migration_paths = []
         for component in settings.components:
             migration_paths.append(
-                resolve_component_module_location(
+                resolve_component_module_locations(
                     component, "alembic_versions"
                 )
             )

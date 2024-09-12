@@ -53,7 +53,7 @@
 import typing
 from pathlib import Path
 from functools import lru_cache
-from salestrackapifjf.core.settings import CoreSettings, settings_factory
+from salestrack_utils.core.settings import CoreSettings, settings_factory
 
 
 ENV_PREFIX = "SALESTRACK_"

@@ -21,8 +21,8 @@ class CoreSettings(BaseSettings):
     debug: bool
     is_testing: bool = False
 
-    #alembic specific
-    components: typing.List[str]
+    # #alembic specific
+    # components: typing.List[str]
 
     #postgres Settings
     pg_dsn: PostgresDsn

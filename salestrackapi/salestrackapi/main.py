@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from auth.entrypoints import users
+from salestrack_utils.auth.entrypoints import users
 
-from salestrackapifjf.domain.models import Base
-from salestrackapifjf.core.config import settings
-from salestrackapifjf.dbconfig.db_config import engine
-from salestrackapifjf.service_layer import services
+from salestrackapi.domain.models import Base
+from salestrackapi.config import settings
+from salestrackapi.dbconfig.db_config import engine
+from salestrackapi.service_layer import services
 
 
 

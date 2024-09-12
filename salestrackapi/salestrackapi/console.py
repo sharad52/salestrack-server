@@ -1,7 +1,7 @@
 from __future__ import annotations
 import uvicorn
-from salestrackapifjf.core import config
-from salestrackapifjf.addon.databases.console import AlembicCommand
+from salestrackapi import config
+from salestrack_utils.addon.databases.console import AlembicCommand
 
 
 class CliCommand:

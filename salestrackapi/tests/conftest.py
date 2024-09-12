@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
 from salestrackapi.main import app
 from salestrackapi.dbconfig.db_config import get_db, Base
-from salestrackapi.core.config import settings
+from salestrackapi.config import settings
 
 
 TEST_DB_URL = settings.TEST_DB_URI
