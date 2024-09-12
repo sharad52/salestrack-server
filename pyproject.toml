@@ -4,10 +4,14 @@ version = "0.1.0"
 description = ""
 authors = ["ersharad <sharad@krispcallmail.com>"]
 readme = "README.md"
+
 packages = [
-    {include = "salestrack"},
-    {include = "auth"},
+    {include = "salestrack_utils", from = "salestrack_utils"},
+    {include = "salestrackapi", from = "salestrackapi"},
 ]
+
+[tool.poetry.dev-dependencies]
+salestrack-utils = {path = "salestrack_utils", develop = true}
 
 [tool.poetry.dependencies]
 python = "^3.10"
