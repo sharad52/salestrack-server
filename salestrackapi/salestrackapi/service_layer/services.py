@@ -8,11 +8,11 @@ from sqlalchemy.exc import IntegrityError
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends, status
 from fastapi.responses import JSONResponse
 
-from salestrackapifjf.schemas import schema
-from salestrackapifjf.domain import models
-from salestrackapifjf.service_layer import helper
-from salestrackapifjf.dbconfig.db_config import get_db
-from auth.utils.jwt_utils import token_required
+from salestrackapi.schemas import schema
+from salestrackapi.domain import models
+from salestrackapi.service_layer import helper
+from salestrackapi.dbconfig.db_config import get_db
+from salestrack_utils.auth.utils.jwt_utils import token_required
 
 
 router = APIRouter(prefix="/sales", tags=["Sales"])

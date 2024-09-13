@@ -1,6 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel, Field, EmailStr
-from salestrackapifjf.schemas.schema import Status
+from salestrackapi.schemas.schema import Status
 from datetime import datetime
 
 

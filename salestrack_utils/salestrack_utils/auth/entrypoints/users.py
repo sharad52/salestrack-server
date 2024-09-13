@@ -4,12 +4,12 @@ from sqlalchemy.orm import Session
 from fastapi import status, APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError, DatabaseError
 
-from auth.schemas import schema
-from auth.domain.models import User, Token
-from auth.utils import jwt_utils
-from salestrackapifjf.dbconfig.db_config import get_db
-from salestrackapifjf.schemas.schema import Status as status_enum
-from salestrackapifjf.core.config import settings
+from salestrack_utils.auth.schemas import schema
+from salestrack_utils.auth.domain.models import User, Token
+from salestrack_utils.auth.utils import jwt_utils
+from salestrackapi.dbconfig.db_config import get_db
+from salestrackapi.schemas.schema import Status as status_enum
+# from salestrackapi.c import settings
 
 
 router = APIRouter(prefix="/user", tags=["User"])

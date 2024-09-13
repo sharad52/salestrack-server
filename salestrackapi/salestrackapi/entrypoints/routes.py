@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from salestrackapifjf.service_layer.services import load_user
+from salestrackapi.service_layer.services import load_user
 
 user_routes = APIRouter(
     prefix='/users',

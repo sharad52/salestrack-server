@@ -6,8 +6,8 @@ from datetime import datetime, timedelta, timezone
 from fastapi import Request, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from auth.domain.models import Token
-from salestrackapifjf.core.config import settings
+from salestrack_utils.auth.domain.models import Token
+# from salestrackapifjf.core.config import settings
 
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')

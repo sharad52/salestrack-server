@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 
-from salestrackapifjf.dbconfig.db_config import Base
+from salestrackapi.dbconfig.db_config import Base
 
 
 class User(Base):

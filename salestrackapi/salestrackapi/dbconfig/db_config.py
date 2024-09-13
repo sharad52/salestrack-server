@@ -1,7 +1,7 @@
 # import databases
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from salestrackapifjf.core.config import settings
+# from salestrackapifjf.core.config import settings
 
 
 engine = create_engine(settings.DATABASE_URI)

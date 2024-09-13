@@ -3,12 +3,9 @@ from importlib import import_module
 from pathlib import Path
 
 
-def resolve_component_module_locations(
-    components: typing.List[str], module_name: str
-) -> typing.List[Path]:
-    """resolve component module locations for defined components"""
-    locations = []
-    for modname in components:
-        mod = import_module(modname)
-        locations.append(Path(mod.__file__).parent.joinpath(module_name))
-    return locations
+def resolve_component_module_location(
+    component: str, module_name: str
+) -> Path:
+    """resolve component module locations for defined component"""
+    module = import_module(component)
+    return Path(module.__file__).parent.joinpath(module_name)

@@ -4,7 +4,7 @@ from alembic import command
 from alembic.config import Config
 from salestrack_utils.core.settings import CoreSettings
 from salestrack_utils.addon.databases.alembic import constants
-from salestrack_utils.core.utils import resolve_component_module_locations
+from salestrack_utils.core.utils import resolve_component_module_location
 
 
 def get_alembic_config() -> Config:
@@ -22,13 +22,14 @@ class AlembicCommand:
     
     def __init__(self, settings: CoreSettings) -> None:
         self.alembic_cfg = get_alembic_config()
-        self.alembic_cfg.set_main_option("sqlalchemy.url", settings.pg_dsn)
+        # import pdb; pdb.set_trace()
+        self.alembic_cfg.set_main_option("sqlalchemy.url", f"{settings.pg_dsn}")
         self.alembic_cfg.set_main_option("database_schema", "public")
 
         migration_paths = []
         for component in settings.components:
             migration_paths.append(
-                resolve_component_module_locations(
+                resolve_component_module_location(
                     component, "alembic_versions"
                 )
             )

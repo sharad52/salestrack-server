@@ -66,6 +66,11 @@ class AppSettings(CoreSettings):
     app_id: str = "com.salestrack.api"
     app_name: str = "salestrackapi"
 
+    components: typing.List[str] = [
+        "salestrack_utils.auth",
+        "salestrackapi", 
+    ]
+
     class Config:
         env_prefix = ENV_PREFIX
 
