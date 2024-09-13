@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import fire
-from salestrack.console import CliCommand as SalesTrackCommand
+from salestrackapi.console import CliCommand as SalesTrackCommand
 
 
 class Command:
