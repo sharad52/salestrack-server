@@ -2,8 +2,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import Column, Integer, Float, String, ForeignKey, Date
 
-from salestrackapi.dbconfig.db_config import Base
-
+from salestrack_utils.addon.databases.bootstrap import Base
 
 class Family(Base):
     __tablename__ = 'family'

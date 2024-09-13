@@ -5,13 +5,12 @@ from typing import List
 from sqlalchemy import extract, func
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends, status
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 
 from salestrackapi.schemas import schema
 from salestrackapi.domain import models
 from salestrackapi.service_layer import helper
-from salestrackapi.dbconfig.db_config import get_db
 from salestrack_utils.auth.utils.jwt_utils import token_required
 
 
@@ -20,17 +19,16 @@ router = APIRouter(prefix="/sales", tags=["Sales"])
 
 @token_required
 @router.get("/family", response_model=List[schema.AddFamily])
-async def list_family(
-    db: Session = Depends(get_db)
-):
-    
+async def list_family(request: Request):
+    db = request.state.db
     family = db.query(models.Family).all()
     return family
 
 
 @token_required
 @router.get("/family/{id}", status_code=status.HTTP_200_OK, response_model=schema.FamilyResponse)
-async def get_family(id: int, db: Session = Depends(get_db)):
+async def get_family(request: Request, id: int):
+    db = request.app.state.db
     family = db.query(models.Family).filter(models.Family.id == id).first()
     if not family:
         raise HTTPException(status_code=404, detail=f"No product found for id: {id}")
@@ -40,7 +38,8 @@ async def get_family(id: int, db: Session = Depends(get_db)):
 
 @token_required
 @router.post("/family", status_code=status.HTTP_201_CREATED, response_model=schema.FamilyResponse)
-async def create_family(post_family: schema.AddFamily, db: Session = Depends(get_db)):
+async def create_family(request: Request, post_family: schema.AddFamily):
+    db = request.app.state.db
     new_family = await helper.create_family_in_db(post_family, db)
     family_schema = schema.FamilyBaseSchema.model_validate(new_family)
     return schema.FamilyResponse(Status=schema.Status.Success, Family=family_schema)
@@ -48,7 +47,8 @@ async def create_family(post_family: schema.AddFamily, db: Session = Depends(get
 
 @token_required
 @router.patch("/family/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=schema.FamilyResponse)
-async def update_family(id: int, payload: schema.FamilyBaseSchema, db: Session = Depends(get_db)):
+async def update_family(request: Request, id: int, payload: schema.FamilyBaseSchema):
+    db = request.app.state.db
     family = db.query(models.Family).filter(models.Family.id == id).first()
     if not family: 
         raise HTTPException(
@@ -78,7 +78,8 @@ async def update_family(id: int, payload: schema.FamilyBaseSchema, db: Session =
 
 @token_required
 @router.get("/product/{id}", status_code=status.HTTP_200_OK, response_model=schema.ProductResponse)
-async def get_product(id: int, db: Session = Depends(get_db)):
+async def get_product(request: Request, id: int):
+    db = request.app.state.db
     product_query = db.query(models.Product).filter(models.Product.id == id)
     product = product_query.first()
     if not product:
@@ -89,7 +90,8 @@ async def get_product(id: int, db: Session = Depends(get_db)):
 
 @token_required
 @router.post("/product", status_code=status.HTTP_201_CREATED, response_model=schema.ProductResponse)
-async def create_product(payload: schema.ProductBaseSchema, db: Session = Depends(get_db)):
+async def create_product(request: Request, payload: schema.ProductBaseSchema):
+    db = request.app.state.db
     product = await helper.create_product_in_db(payload, db)
     product_schema = schema.ProductBaseSchema.model_validate(product)
     return schema.ProductResponse(Status=schema.Status.Success, Product=product_schema)
@@ -97,7 +99,8 @@ async def create_product(payload: schema.ProductBaseSchema, db: Session = Depend
 
 @token_required
 @router.patch("/product/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=schema.ProductResponse)
-async def update_product(id: int, payload: schema.UpdateProductSchema, db: Session = Depends(get_db)):
+async def update_product(request: Request, id: int, payload: schema.UpdateProductSchema):
+    db = request.app.state.db
     product_query = db.query(models.Product).filter(models.Product.id == id).first()
     if not product_query:
         raise HTTPException(status_code=404, detail=f"No product found for id: {id}")
@@ -126,11 +129,12 @@ async def update_product(id: int, payload: schema.UpdateProductSchema, db: Sessi
 
 @token_required
 @router.post("/load-data")
-async def load_data(type: str = Form(...), file: UploadFile = File(...), db: Session = Depends(get_db)):
+async def load_data(request: Request, type: str = Form(...), file: UploadFile = File(...)):
+    db = request.app.state.db
     contents = file.file.read()
     data = io.BytesIO(contents)
     df = pd.read_excel(data, engine='openpyxl')
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         # process excel data for db
         family_name = row.get("Family")
         # if family_name:
@@ -178,7 +182,8 @@ async def load_data(type: str = Form(...), file: UploadFile = File(...), db: Ses
 #Get sum of product sales from last year
 @token_required
 @router.get("/last-year", status_code=status.HTTP_200_OK)
-async def get_sum_of_previous_year_sales(db: Session = Depends(get_db)):
+async def get_sum_of_previous_year_sales(request: Request):
+    db = request.app.state.db
     try:
         current_year = datetime.today().year
         previous_year = (current_year - 1)
